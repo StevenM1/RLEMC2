@@ -8,8 +8,8 @@ if(length(args)>0) {
   # manual run
   rm(list=ls())
   decisionModel <- 'ARD'     # ONE OF: RD, ARD
-  learningModel <- 'delta'   # ONE OF: delta, vkf, vkfbinary
-  experimentN <- 'exp3'      # exp1 = 'standard' task, exp2 = reversal learning, exp3 = SAT
+  learningModel <- 'vkfbinary'   # ONE OF: delta, vkf, vkfbinary
+  experimentN <- 'exp1'      # exp1 = 'standard' task, exp2 = reversal learning, exp3 = SAT
 }
 
 source('./models.R')         # these are a set of functions that parameterise ARD and learning models
@@ -79,8 +79,8 @@ Ffunctions = list(s_left=s_left, s_right=s_right, p_left=p_left, p_right=p_right
 
 
 ## get model set-up
-learningModelParameters <- getLearningModel(learningModel)
-decisionModelParameters <- getDecisionModel(decisionModel)
+learningModelParameters <- getLearningModel(learningModel)  # in models.R
+decisionModelParameters <- getDecisionModel(decisionModel)  # in models.R
 
 
 # For experiment 3, add SAT manipulation. For now, just assume B varies with cue, and model the difference ACC-SPD (a-s)
@@ -95,6 +95,7 @@ if(experimentN=='exp3') {
   Ffactors = list(subjects=levels(data$subjects),S=levels(data$S))
 }
 
+
 # Load correct model
 if(learningModel == 'delta' & decisionModel == 'RD') {
   model = rdmRL         # UNTESTED! didn't fit this yet within EMC2
@@ -105,8 +106,8 @@ if(learningModel == 'delta' & decisionModel == 'RD') {
   model = rdmRLvkf      # UNTESTED! didn't fit this yet within EMC2
   warning('UNTESTED! didnt fit this yet within EMC2')
 } else if(learningModel %in% c('vkf', 'vkfbinary') & decisionModel == 'ARD') {
-  model = rdmRLARDvkf   # UNTESTED! didn't fit this yet within EMC2
-  warning('UNTESTED! didnt fit this yet within EMC2')
+  model = rdmRLARDvkf   # warning: this doesnt sample well
+  warning('This model doesnt sample well -- good luck!')
 }
 
 
