@@ -7,10 +7,10 @@ library(emcAdapt)
 experimentN <- 'exp3'
 decisionModel <- 'ARD'
 learningModel <- 'delta'
-save_fn_samples <- paste0('/home/stevenm/Projects/RLEMC2/samples/data-', experimentN, '_model-', decisionModel, '-', learningModel, '.RData')
+save_fn_samples <- paste0('./samples/data-', experimentN, '_model-', decisionModel, '-', learningModel, '.RData')
 
 ## load data
-print(load(paste0('~/Projects/EMC_latest/RLEMC/data/data_', experimentN, '_newformat.RData')))
+print(load(paste0('./data/data_', experimentN, '_newformat.RData')))
 
 ## load samples
 print(load(save_fn_samples)); chain_n(samplers); filter <- ifelse(chain_n(samplers)[1,3]>0, 'sample', 'burn')
@@ -189,24 +189,3 @@ if(experimentN == 'exp3') {
   plotPosteriors(rtByBinPP=rtByBinPP, accByBinPP=accByBinPP, rtByBinData=rtByBinData, accByBinData=accByBinData)
 }
 
-
-# tmp <- pp
-# tmp <- tmp[tmp$postn==1,]
-# tmp <- tmp[order(tmp$subjects, tmp$trials),]
-# cols <- c('subjects', 'trials', 'rt', 'R', 'Rs', 's_left', 's_right', 'p_left', 'p_right', 'acc')
-# tmp[,cols]
-
-# tmp$difficulty <- abs(tmp$p_left-tmp$p_right)
-# aggregate(acc~difficulty, tmp, mean)
-#
-#
-# debugonce(update_pars); post_predict(samplers, n_cores=1)
-
-
-tmp <- aggregate(acc~trials, data, mean)
-plot(tmp$trials, tmp$acc)
-
-tmp <- aggregate(acc~trials, pp2, mean)
-plot(tmp$trials, tmp$acc)
-
-tmp2 <- pp[order(pp$subjects, pp$trials, pp$postn),]
