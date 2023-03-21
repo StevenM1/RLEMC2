@@ -16,9 +16,9 @@ getLearningModel <- function(learningModel='delta') {
     }
   } else if(learningModel == 'vkfbinary') {
     init_par = c('q0', 'volatility0', 'w0')     # predictions0, volatility0, uncertainty0
-    learningParameters <- c(init_par, 'alpha')  # alpha = volatilitylearningrate!
+    learningParameters <- c(init_par, 'alpha')  # alpha here = volatilitylearningrate!
     learningFlist <- lapply(learningParameters, function(x) as.formula(paste0(x, '~1')))
-    learningConstants <- c(q0=log(0.0001), alpha=log(.5), volatility0=log(1))
+    learningConstants <- c(q0=log(0.0001), alpha=log(.5), volatility0=log(1))  # basically fix everything BUT w0
     adapt_par <- c('alpha', 'w0')
     adapt_fun <- function(lastValues, parameters, reward) {
       ## lastvalues should be a VECTOR of (prediction, volatility, uncertainty)
