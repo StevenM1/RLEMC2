@@ -4,9 +4,9 @@ library(EMC2)
 library(emcAdapt)
 
 ## settings
-experimentN <- 'exp3'
+experimentN <- 'exp2'
 decisionModel <- 'ARD'
-learningModel <- 'delta'
+learningModel <- 'vkfbinary' #'delta'
 save_fn_samples <- paste0('./samples/data-', experimentN, '_model-', decisionModel, '-', learningModel, '.RData')
 
 ## load data
@@ -120,7 +120,7 @@ if(experimentN == 'exp1') {
   data$acc <- data$Racc
 
   # get descriptives per bin
-  descriptives <- calculateByBin(pp, data, n_cores=20)
+  descriptives <- calculateByBin(pp, data, n_cores=1)
   for(varname in names(descriptives)) {
     assign(varname, descriptives[[varname]])
   }
@@ -153,7 +153,7 @@ if(experimentN == 'exp2') {
   if(!'Sorig' %in% colnames(pp2)) pp2$Sorig <- pp$S
   pp2$S <- 'A'
 
-  descriptives <- calculateByBin(pp2, data, n_cores=20, byColumn='trialNreversal')
+  descriptives <- calculateByBin(pp2, data, n_cores=1, byColumn='trialNreversal')
   for(varname in names(descriptives)) {
     assign(varname, descriptives[[varname]])
   }
