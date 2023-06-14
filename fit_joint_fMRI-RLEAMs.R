@@ -9,12 +9,12 @@ if(length(args)>0) {
 }
 if(file.exists(fn)) print(load(fn)) else stop('Samplers file not found')
 
-
 library(reshape2)
 library(EMC2)
 library(emcAdapt)
 library(pracma)
 source('./utility_funcs_EMC2_overwritten.R')
+source('./utility_funcs_fmri.R')
 
 ## Overwrite to pass along prediction errors
 assignInNamespace("log_likelihood_race", log_likelihood_race_new,ns="EMC2")
@@ -27,7 +27,8 @@ assignInNamespace("calc_ll_manager", calc_ll_manager_new, ns="EMC2")
 
 
 ## sample
-run_emc(samplers, fileName=fn, cores_per_chain = 7, cores_for_chains = 3, verbose  = TRUE, verboseProgress = TRUE)
+run_emc(samplers, fileName=fn, cores_per_chain = 7, cores_for_chains = 3,
+        verbose  = TRUE, verboseProgress = TRUE)
 
 load(fn)
 pp <- post_predict(samples, n_cores=20)

@@ -147,7 +147,7 @@ design <- make_design_fmri2(events=modulated_events,    # events of modulation
 data <- all_fmri_ts
 
 # Load behavioral data!
-print(load('../data/datadesigntrondheim.RData'))
+print(load('./data/datadesigntrondheim.RData'))
 data_behavior <- droplevels(data_behavior[as.character(data_behavior$subjects)!='9',])   # also exclude subject 9 here
 data$subjects <- factor(data$subjects, levels=levels(data_behavior$subjects))
 samplers <- make_samplers(list(data_behavior, data), list(design_behavior, design))
