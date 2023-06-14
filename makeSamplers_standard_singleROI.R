@@ -12,17 +12,13 @@ if(length(args)>0) {
 library(EMC2)
 library(emcAdapt)
 source('./utility_funcs_fmri.R')
-source('./utility_funcs_EMC2_overwritten.R')
+# source('./utility_funcs_EMC2_overwritten.R')
 
-## Overwrite to pass along prediction errors
-assignInNamespace("log_likelihood_race", log_likelihood_race_new,ns="EMC2")
-
-## Overwrite this function to pass prediction errors from behavioral to neural model
-assignInNamespace("log_likelihood_joint", log_likelihood_joint_new, ns="EMC2")
-
-## Overwrite calc_ll_manager to allow for optional arguments
-assignInNamespace("calc_ll_manager", calc_ll_manager_new, ns="EMC2")
-
+fn <- paste0('./samples/dataset-trondheim_model-rleam_roi-', ROI, '.RData')
+# prevent overwrite
+if(file.exists(fn)) {
+  stop('Samplers file already exist!')
+}
 
 
 ## Events reading
@@ -156,8 +152,4 @@ data_behavior <- droplevels(data_behavior[as.character(data_behavior$subjects)!=
 data$subjects <- factor(data$subjects, levels=levels(data_behavior$subjects))
 samplers <- make_samplers(list(data_behavior, data), list(design_behavior, design))
 
-
-# sample
-fn <- paste0('./samples/dataset-trondheim_model-rleam_roi-', ROI, '.RData')
-if(file.exists(fn)) print(load(fn))
-run_emc(samplers, fileName=fn, cores_per_chain = 7, cores_for_chains = 3, verbose  = T, useC = FALSE)
+save(samplers, file=fn)

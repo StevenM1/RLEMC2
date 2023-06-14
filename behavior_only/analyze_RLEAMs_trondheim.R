@@ -1,16 +1,17 @@
-#### RL-EMC!
 rm(list=ls())
 library(EMC2)
 library(emcAdapt)
+library(parallel)
+source('./behavior_only/utility_funcs_RLEAMs.R')
 
 ## settings
-task <- 'revl'
+task <- 'rlsat'
 decisionModel <- 'ARD'
 learningModel <- 'delta'
-save_fn_samples <- paste0('/home/stevenm/Projects/RLEMC2/samples/dataset-trondheim_task-', task, '_model-', decisionModel, '-', learningModel, '.RData')
+save_fn_samples <- paste0('./samples/dataset-trondheim_task-', task, '_model-', decisionModel, '-', learningModel, '.RData')
 
 ## load data
-print(load(paste0('/home/stevenm/Projects/RLEMC2/data/dataset-trondheim_task-', task, '.RData')))
+print(load(paste0('./data/dataset-trondheim_task-', task, '.RData')))
 
 ## load samples
 print(load(save_fn_samples)); chain_n(samplers); filter <- ifelse(chain_n(samplers)[1,4]>0, 'sample', 'burn')
@@ -22,7 +23,6 @@ samples_combined <- rdmRLARD()$Ntransform(t(samples_combined))
 round(apply(samples_combined, 2, mean), 3)
 
 ## other checks
-##
 EMC2:::iat_pmwg(samplers)
 EMC2:::gd_pmwg(samplers, return_summary = TRUE)
 
@@ -45,16 +45,10 @@ calculateByBin <- function(pp, data, n_cores=15, byColumn=NULL) {
   }
 
   if(n_cores > 1) {
-    library(snowfall)
-    cl = sfInit(parallel=TRUE, cpus=n_cores)
-    #  ppDf <- data.frame(pp)
-    #  sfExport('ppDf')
     ppBySub <- lapply(unique(pp$subjects), function(x) pp[pp$subjects==x,])
-    #  out = sfLapply(ppBySub, function(x) aggregate(rt~bin*S*postn*subjects, x, quantile, seq(.1, .9, .4)))
-    rtByBinBySByPostnBySubjects <- do.call(rbind, sfLapply(ppBySub, function(x) aggregate(rt~bin*S*postn*subjects, x, quantile, seq(.1, .9, .4))))
-    accByBinBySByPostnBySubjects <- do.call(rbind, sfLapply(ppBySub, function(x) aggregate(acc~bin*S*postn*subjects, x, mean)))
+    rtByBinBySByPostnBySubjects <- do.call(rbind, mclapply(ppBySub, function(x) aggregate(rt~bin*S*postn*subjects, x, quantile, seq(.1, .9, .4)), mc.cores = 15))
+    accByBinBySByPostnBySubjects <- do.call(rbind, mclapply(ppBySub, function(x) aggregate(acc~bin*S*postn*subjects, x, mean), mc.cores = 15))
 
-    sfStop()
   } else {
     rtByBinBySByPostnBySubjects <- aggregate(rt~bin*S*postn*subjects, data.frame(pp), quantile, probs=seq(.1,.9,.4))
     accByBinBySByPostnBySubjects <- aggregate(acc~bin*S*postn*subjects, pp, mean)
@@ -118,13 +112,13 @@ calculatePEByBin <- function(pp, n_cores=15, byColumn=NULL) {
   }
 
   if(n_cores > 1) {
-    library(snowfall)
-    cl = sfInit(parallel=TRUE, cpus=n_cores)
+    # library(snowfall)
+    # cl = sfInit(parallel=TRUE, cpus=n_cores)
     #  ppDf <- data.frame(pp)
     #  sfExport('ppDf')
     ppBySub <- lapply(unique(pp$subjects), function(x) pp[pp$subjects==x,])
     #  out = sfLapply(ppBySub, function(x) aggregate(rt~bin*S*postn*subjects, x, quantile, seq(.1, .9, .4)))
-    PEByBinBySByPostnBySubjects <- do.call(rbind, sfLapply(ppBySub, function(x) aggregate(PE~bin*S*postn*subjects, x, mean)))
+    PEByBinBySByPostnBySubjects <- do.call(rbind, mclapply(ppBySub, function(x) aggregate(PE~bin*S*postn*subjects, x, mean), mc.cores = 15))
 
     sfStop()
   } else {
@@ -142,51 +136,60 @@ calculatePEByBin <- function(pp, n_cores=15, byColumn=NULL) {
   return(list('PEByBinPP'=PEByBinPP))
 }
 
-#debugonce(EMC2:::make_data)
 pp <- EMC2:::post_predict(samplers, n_cores = 20)
+pp$s_left <- s_left(pp)
+pp$s_right <- s_right(pp)
+pp$p_left <- p_left(pp)
+pp$p_right <- p_right(pp)
+pp$p_low <- p_low(pp)
+pp$p_high <- p_high(pp)
+pp$s_low <- s_low(pp)
+pp$s_high <- s_high(pp)
+pp$lRS <- lRS(pp)
+pp$correct_direction <- correct_direction(pp)
 
-get_learn <- function(samplers, pars, n_cores=1) {
-  data <- attr(samplers,"data_list")
-  design <- attr(samplers,"design_list")
-  model <- attr(samplers,"model_list")
-  n_post <- length(pars)
+# get_learn <- function(samplers, pars, n_cores=1) {
+#   data <- attr(samplers,"data_list")
+#   design <- attr(samplers,"design_list")
+#   model <- attr(samplers,"model_list")
+#   n_post <- length(pars)
+#
+#   for(j in 1:length(data)){
+#     subjects <- levels(data[[j]]$subjects)
+#     ## TMP OVERWRITE
+# #    model[[j]] <- rdmRLARD
+#     ##
+#
+#     data2 <- design_model(
+#       EMC2:::add_accumulators(data[[1]],design[[j]]$matchfun,simulate=TRUE,
+#                               type=model[[j]]()$type,Fcovariates=design[[j]]$Fcovariates),
+#       design[[j]],model[[j]],add_acc=FALSE,compress=FALSE,verbose=FALSE,
+#       rt_check=FALSE)
+#     if(n_cores == 1) {
+#       PEs <- Qvalues <- vector(mode="list",length=n_post)
+#       for(i in 1:n_post) {
+#         cat('.', sep='')
+#         pars2 <- model[[j]]()$Ttransform(model[[j]]()$Ntransform(EMC2:::map_p(
+#           model[[j]]()$transform(add_constants(pars[[i]],design[[j]]$constants)),data2
+#         )),data2)
+#
+#         PEs[[i]] <- attr(pars2, 'predictionErrors')
+#         Qvalues[[i]] <- attr(pars2, 'Qvalues')
+#       }
+#     }
+#   }
+#   return(list(predictionErrors=PEs, Qvalues=Qvalues))
+# }
 
-  for(j in 1:length(data)){
-    subjects <- levels(data[[j]]$subjects)
-    ## TMP OVERWRITE
-#    model[[j]] <- rdmRLARD
-    ##
-
-    data2 <- design_model(
-      EMC2:::add_accumulators(data[[1]],design[[j]]$matchfun,simulate=TRUE,
-                              type=model[[j]]()$type,Fcovariates=design[[j]]$Fcovariates),
-      design[[j]],model[[j]],add_acc=FALSE,compress=FALSE,verbose=FALSE,
-      rt_check=FALSE)
-    if(n_cores == 1) {
-      PEs <- Qvalues <- vector(mode="list",length=n_post)
-      for(i in 1:n_post) {
-        cat('.', sep='')
-        pars2 <- model[[j]]()$Ttransform(model[[j]]()$Ntransform(EMC2:::map_p(
-          model[[j]]()$transform(add_constants(pars[[i]],design[[j]]$constants)),data2
-        )),data2)
-
-        PEs[[i]] <- attr(pars2, 'predictionErrors')
-        Qvalues[[i]] <- attr(pars2, 'Qvalues')
-      }
-    }
-  }
-  return(list(predictionErrors=PEs, Qvalues=Qvalues))
-}
-
-out <- get_learn(samplers, attr(pp, 'pars'))
-PEs <- lapply(out$predictionErrors, function(x) apply(x, 1, sum, na.rm=TRUE))
-PEs2 <- unlist(PEs) # do.call(rbind, PEs)
-# plot(apply(PEs2, 1, mean))
-pp <- pp[order(pp$postn, pp$subjects, pp$trials),]
-pp$PE <- PEs2  # apply(PEs2, 1, mean)
-
-tmp3 <- aggregate(PE~trialNreversal, pp, mean)
-plot(tmp3$trialNreversal, tmp3$PE, type='l')
+# out <- get_learn(samplers, attr(pp, 'pars'))
+# PEs <- lapply(out$predictionErrors, function(x) apply(x, 1, sum, na.rm=TRUE))
+# PEs2 <- unlist(PEs) # do.call(rbind, PEs)
+# # plot(apply(PEs2, 1, mean))
+# pp <- pp[order(pp$postn, pp$subjects, pp$trials),]
+# pp$PE <- PEs2  # apply(PEs2, 1, mean)
+#
+# tmp3 <- aggregate(PE~trialNreversal, pp, mean)
+# plot(tmp3$trialNreversal, tmp3$PE, type='l')
 
 # plot(0,0, type='n', xlab='trialN', xlim=c(-40, 40), ylim=c(-.5, .6), ylab='PE')
 # doPlot1 <- function(PE, trialN) {

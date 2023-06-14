@@ -1,5 +1,15 @@
-#### RL-EMC2!
-rm(list=ls())
+#### Fit
+args = commandArgs(trailingOnly=TRUE)
+if(length(args)>0) {
+  fn <- args[1]
+} else {
+  # manual run
+  rm(list=ls())
+  fn <- './samples/dataset-trondheim_model-rleam_infinitefactors.RData'
+}
+if(file.exists(fn)) print(load(fn)) else stop('Samplers file not found')
+
+
 library(reshape2)
 library(EMC2)
 library(emcAdapt)
@@ -16,8 +26,9 @@ assignInNamespace("log_likelihood_joint", log_likelihood_joint_new, ns="EMC2")
 assignInNamespace("calc_ll_manager", calc_ll_manager_new, ns="EMC2")
 
 
-## load samplers & sample
-fn <- paste0('./samples/dataset-trondheim_model-rleam_infinitefactors.RData')
-if(file.exists(fn)) print(load(fn)) else stop('Samplers file not found')
-
+## sample
 run_emc(samplers, fileName=fn, cores_per_chain = 7, cores_for_chains = 3, verbose  = TRUE, verboseProgress = TRUE)
+
+load(fn)
+pp <- post_predict(samples, n_cores=20)
+save(pp, file=gsub('.RData', '_pp.RData', fn))
