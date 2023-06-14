@@ -4,7 +4,7 @@ library(reshape2)
 library(EMC2)
 library(emcAdapt)
 library(pracma)
-source('./emc2_functions_overwrite.R')
+source('./utility_funcs_EMC2_overwritten.R')
 
 ## Overwrite to pass along prediction errors
 assignInNamespace("log_likelihood_race", log_likelihood_race_new,ns="EMC2")

@@ -158,7 +158,7 @@ for(task in c('rlsat', 'revl')) {
   data <- EMC2:::add_trials(data)
   data <- droplevels(data)
   levels(data$cue) <- c('ACC', 'SPD')
-  save(data, file=paste0('../RLEMC2/data/dataset-trondheim_task-', task, '.RData'))
+  save(data, file=paste0('../data/dataset-trondheim_task-', task, '.RData'))
 }
 
 

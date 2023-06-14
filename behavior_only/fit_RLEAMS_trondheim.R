@@ -156,7 +156,7 @@ design <- make_design(
 ## SAVE DATA & DESIGN FOR JOINT MODELLING
 # data_behavior <- data
 # design_behavior <- design
-# save(data_behavior, design_behavior, file='./datadesigntrondheim_rcpp.RData')
+# save(data_behavior, design_behavior, file='../data/datadesigntrondheim.RData')
 ##
 
 #### for debugging

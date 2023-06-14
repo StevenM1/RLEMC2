@@ -6,7 +6,7 @@ library(reshape2)
 library(EMC2)
 library(emcAdapt)
 library(pracma)
-source('./utility_funcs_fmri2.R')
+source('./utility_funcs_fmri.R')
 
 
 fn <- paste0('./samples/dataset-trondheim_model-rleam_infinitefactors.RData')
@@ -153,8 +153,8 @@ design <- make_design_fmri2(events=modulated_events,    # events of modulation
 data <- ROI_timeseries
 
 
-# Load behavioral data! This was pre-created in fit_trondheim_behavior.R
-print(load('./datadesigntrondheim_rcpp.RData'))
+# Load behavioral data, this was pre-created in fit_RLEAMs_trondheim.R
+print(load('./data/datadesigntrondheim.RData'))
 data_behavior <- droplevels(data_behavior[as.character(data_behavior$subjects)!='9',])   # also exclude subject 9 here
 data$subjects <- factor(data$subjects, levels=levels(data_behavior$subjects))
 

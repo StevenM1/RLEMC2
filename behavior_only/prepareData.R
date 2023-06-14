@@ -4,7 +4,7 @@
 
 # experiment 1 (classical) ------------------------------------------------
 experimentN <- 'exp1'
-print(load(paste0('./data/data_', experimentN, '.RData')))
+print(load(paste0('../data/data_', experimentN, '.RData')))
 
 data <- dat[!dat$excl,] # Excluded participants
 data$pp <- factor(as.character(data$pp))
@@ -27,13 +27,13 @@ data$R <- factor(data$R)
 # overwrite trial numbers
 data <- add_trials(data)
 head(data)
-save(data, file='./data/data_exp1_newformat.RData')
+save(data, file='../data/data_exp1_newformat.RData')
 
 
 
 # Experiment 3 (SAT) ----------------------------------------
 experimentN <- 'exp3'
-print(load(paste0('./data/data_', experimentN, '.RData')))
+print(load(paste0('../data/data_', experimentN, '.RData')))
 
 data <- dat[!dat$excl,] # Excluded participants
 data$pp <- factor(as.character(data$pp))
@@ -63,7 +63,7 @@ data$R <- factor(ifelse(data$R==0, 'left', 'right'), levels=c('left', 'right'))
 # overwrite trial numbers
 data <- EMC2:::add_trials(data)
 head(data)
-save(data, file='./data/data_exp3_newformat.RData')
+save(data, file='../data/data_exp3_newformat.RData')
 
 
 
